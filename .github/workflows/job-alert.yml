@@ -2,7 +2,7 @@ name: Job Alert Bot
 
 on:
   schedule:
-    - cron: '0 */6 * * *'   # cada 6 horas (4 veces al día, en UTC)
+    - cron: '0 */8 * * *'   # cada 8 horas (3 veces al día, en UTC) — dentro del free tier de SerpApi
   workflow_dispatch:          # botón para correrlo manualmente
 
 permissions:
@@ -32,7 +32,10 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          JOOBLE_API_KEY: ${{ secrets.JOOBLE_API_KEY }}   # opcional (Colombia)
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}         # IA (matching + borradores)
+          JOOBLE_API_KEY: ${{ secrets.JOOBLE_API_KEY }}     # opcional (Colombia)
+          CAREERJET_AFFID: ${{ secrets.CAREERJET_AFFID }}   # opcional (agregador Colombia)
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}           # opcional (Google Jobs)
         run: python job_bot.py
 
       - name: Guardar ofertas vistas

@@ -1,92 +1,79 @@
 # 🤖 Job Alert Bot
 
-Bot que busca vacantes que encajan con tu perfil (Full Stack / React / Python / FastAPI)
-y te las manda por **Telegram**. Corre solo en **GitHub Actions** cada 6 horas —
-no necesitas tu PC prendida ni instalar Python.
+Bot que busca vacantes que encajan con tu perfil (Full Stack / React / Python / FastAPI),
+las **puntúa con IA leyendo tu CV**, te escribe un **borrador para aplicar** y te las manda
+por **Telegram**. Corre solo en **GitHub Actions** cada 8 horas — sin tu PC prendida.
 
-Busca en fuentes **gratis y legales** (nada de scrapear LinkedIn):
+Busca en fuentes **gratis y legales** (nada de scrapear LinkedIn/Computrabajo):
 
-| Fuente | Qué trae | Necesita key |
+| Fuente | Qué trae | Key |
 |---|---|---|
-| **RemoteOK** | Remoto global (tech) | No |
-| **Remotive** | Remoto global (software-dev) | No |
-| **We Work Remotely** | Full-stack / back / front remoto | No |
-| **Arbeitnow** | Remoto + Europa | No |
-| **Jooble** | Colombia (Neiva + remoto CO) | Sí (gratis, opcional) |
+| **RemoteOK** | Remoto global (tech) | — |
+| **Remotive** | Remoto global (software-dev) | — |
+| **We Work Remotely** | Full-stack / back / front remoto | — |
+| **Arbeitnow** | Remoto + Europa | — |
+| **Himalayas** | Remoto global (con seniority) | — |
+| **Jobicy** | Remoto global (marca geo LATAM) | — |
+| **Jooble** | Colombia (Neiva + remoto CO) | `JOOBLE_API_KEY` |
+| **Careerjet** | Agregador Colombia | `CAREERJET_AFFID` |
+| **Google Jobs** (SerpApi) | LinkedIn / Computrabajo / Indeed vía Google | `SERPAPI_KEY` |
+
+> 🧠 **Matching con IA (Groq):** con `GROQ_API_KEY`, la IA lee tu `perfil.md` + cada vacante,
+> te da un **% de encaje**, una razón y un **borrador de mensaje** para aplicar. Sin la key,
+> el bot igual funciona con el ranking por palabras clave.
 
 ---
 
-## 🚀 Puesta en marcha (una sola vez, ~10 min)
+## 🔑 Secrets (en GitHub → Settings → Secrets and variables → Actions)
 
-### 1) Sube esta carpeta a un repo de GitHub
-```bash
-cd job-alert
-git init
-git add .
-git commit -m "feat: bot de empleos"
-git branch -M main
-git remote add origin https://github.com/Naivelk/job-alert.git
-git push -u origin main
-```
-(Primero crea el repo vacío `job-alert` en GitHub.)
+| Secret | ¿Para qué? | Cómo obtenerlo |
+|---|---|---|
+| `TELEGRAM_BOT_TOKEN` | mandarte los avisos | @BotFather → `/newbot` |
+| `TELEGRAM_CHAT_ID` | a quién avisar | @userinfobot |
+| `GROQ_API_KEY` | matching con IA + borradores | gratis en <https://console.groq.com/keys> |
+| `JOOBLE_API_KEY` | vacantes Colombia | gratis en <https://jooble.org/api/about> |
+| `CAREERJET_AFFID` | agregador Colombia | gratis en <https://www.careerjet.com/partners/> |
+| `SERPAPI_KEY` | Google Jobs (LinkedIn/Computrabajo) | gratis (100/mes) en <https://serpapi.com/> |
 
-### 2) Crea tu bot de Telegram
-1. En Telegram, abre **@BotFather** → escribe `/newbot` → dale un nombre.
-2. Te dará un **TOKEN** parecido a `8123456789:AAH...`. Guárdalo.
-3. **Escríbele algo a tu bot** (dale a "Start" / manda "hola"). Importante para el paso 3.
+Los 2 primeros son **obligatorios**; el resto son opcionales — el bot omite la fuente si falta su key.
 
-### 3) Consigue tu CHAT_ID
-- La forma fácil: en Telegram abre **@userinfobot** y te dice tu `Id` (un número).
-- (Alternativa: entra a `https://api.telegram.org/bot<TU_TOKEN>/getUpdates` en el navegador
-  después de escribirle al bot, y busca `"chat":{"id":...}`.)
-
-### 4) Guarda los secrets en GitHub
-En tu repo → **Settings → Secrets and variables → Actions → New repository secret**.
-Crea estos:
-
-| Nombre | Valor |
-|---|---|
-| `TELEGRAM_BOT_TOKEN` | el token de BotFather |
-| `TELEGRAM_CHAT_ID` | tu chat id |
-| `JOOBLE_API_KEY` | *(opcional)* tu key de Jooble — ver abajo |
-
-### 5) Enciéndelo
-En tu repo → pestaña **Actions** → activa los workflows si te lo pide →
-elige **"Job Alert Bot"** → **Run workflow**.
-
-En la 1ª corrida te llegan las **10 mejores** ofertas para arrancar. Después,
-cada 6 horas solo te avisa de las **nuevas**.
+Enlace directo para agregarlos: <https://github.com/Naivelk/job-alert/settings/secrets/actions/new>
 
 ---
 
-## 🇨🇴 (Opcional) Activar vacantes de Colombia con Jooble
-1. Pide tu key gratis en <https://jooble.org/api/about> (registro rápido).
-2. Agrégala como secret `JOOBLE_API_KEY` (paso 4).
-Sin este key el bot igual funciona; solo omite Jooble.
+## 🚀 Encenderlo
+GitHub → pestaña **Actions** → **Job Alert Bot** → **Run workflow**.
+En la 1ª corrida te llegan las **10 mejores** vacantes. Después corre solo cada 8h.
 
 ---
 
 ## ⚙️ Ajustar a tu gusto (`config.py`)
-- **`STRONG_KEYWORDS` / `BONUS_KEYWORDS`** → tus tecnologías/roles. Cambia el ranking.
-- **`MIN_SCORE`** → súbelo (ej. 5) si quieres menos ofertas pero más precisas.
-- **`MAX_PER_RUN`** → tope de ofertas por corrida (anti-spam).
-- **`JOOBLE_QUERIES`** → qué buscar en Colombia.
-- Cambiar la frecuencia: edita el `cron` en `.github/workflows/job-alert.yml`.
+- **`STRONG_KEYWORDS` / `BONUS_KEYWORDS`** → tus tecnologías/roles.
+- **`HIDE_SENIOR`** → `True` oculta vacantes senior/lead/principal (ideal early-career). Ponlo en `False` para verlas.
+- **`MIN_SCORE`** → súbelo si quieres menos ofertas, más precisas.
+- **`AI_MIN_FIT`** → % mínimo de encaje IA para avisarte (baja el ruido).
+- **`AI_SCORE_TOP`** → cuántas vacantes pasa a la IA por corrida (controla el gasto).
+- **`GROQ_MODEL`** → si Groq deprecia el modelo, cámbialo aquí.
+- **`*_QUERIES`** → qué buscar en Jooble / Careerjet / Google Jobs.
+- **Frecuencia** → el `cron` en `.github/workflows/job-alert.yml`.
+- **Tu CV** → edita `perfil.md` (la IA lo usa como contexto).
 
 ## 📁 Estructura
 ```
 job-alert/
-├── job_bot.py        # lógica principal (dedup, ranking, Telegram)
+├── job_bot.py        # lógica: dedup, filtro junior, IA, Telegram
 ├── sources.py        # fetchers de cada bolsa de empleo
+├── ai_match.py       # matching con IA (Groq)
 ├── config.py         # tu perfil y ajustes  ← edita aquí
+├── perfil.md         # tu CV resumido (contexto para la IA)
 ├── seen.json         # memoria de ofertas ya enviadas (se actualiza sola)
 ├── requirements.txt
-└── .github/workflows/job-alert.yml   # el cron de GitHub Actions
+└── .github/workflows/job-alert.yml
 ```
 
 ## 📝 Notas
-- El bot **no aplica por ti** (eso viola los términos de LinkedIn y te puede costar la cuenta).
-  Te manda las ofertas para que **tú apliques** con tu toque humano — que es lo que sí funciona.
-- Respeta los términos de las APIs: enlaza de vuelta a la fuente y uso personal.
-- GitHub desactiva los cron si el repo lleva 60 días sin actividad; con las corridas
-  automáticas eso no pasa, pero si lo pausas, reactívalo desde la pestaña Actions.
+- El bot **no aplica por ti** ni scrapea LinkedIn/Computrabajo (eso viola sus términos y
+  arriesga tu cuenta). Te trae las vacantes — incluidas las de LinkedIn/Computrabajo vía
+  Google Jobs — para que **tú apliques**, que es lo que sí funciona.
+- Respeta los términos de las APIs (enlaza de vuelta a la fuente, uso personal).
+- `perfil.md` no incluye tu teléfono a propósito (el repo es público).
