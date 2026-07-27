@@ -1,0 +1,44 @@
+name: Job Alert Bot
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # cada 6 horas (4 veces al día, en UTC)
+  workflow_dispatch:          # botón para correrlo manualmente
+
+permissions:
+  contents: write             # para guardar seen.json (no repetir ofertas)
+
+concurrency:
+  group: job-alert
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run bot
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          JOOBLE_API_KEY: ${{ secrets.JOOBLE_API_KEY }}   # opcional (Colombia)
+        run: python job_bot.py
+
+      - name: Guardar ofertas vistas
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add seen.json
+          git diff --staged --quiet || git commit -m "chore: update seen jobs [skip ci]"
+          git push

@@ -1,0 +1,188 @@
+# ============================================================================
+#  FUENTES DE EMPLEO  —  cada función devuelve una lista de ofertas normalizadas
+# ============================================================================
+#  Formato normalizado de cada oferta (dict):
+#    id, title, company, location, tags(list), url, source, date, snippet
+# ============================================================================
+import html
+import re
+import requests
+import feedparser
+
+UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/125.0 Safari/537.36")
+HEADERS = {"User-Agent": UA, "Accept": "application/json"}
+RSS_HEADERS = {"User-Agent": UA}   # los feeds RSS no quieren Accept: application/json
+TIMEOUT = 25
+
+
+def _clean(text):
+    """Quita etiquetas HTML, decodifica entidades y colapsa espacios."""
+    if not text:
+        return ""
+    text = re.sub(r"<[^>]+>", " ", str(text))
+    text = html.unescape(text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+# ---------------------------------------------------------------------------
+def fetch_remoteok():
+    jobs = []
+    try:
+        r = requests.get("https://remoteok.com/api", headers=HEADERS, timeout=TIMEOUT)
+        r.raise_for_status()
+        data = r.json()
+    except Exception as e:
+        print(f"[remoteok] error: {e}")
+        return jobs
+    for item in data:
+        # El primer elemento del array es un aviso legal/metadata: se salta.
+        if not isinstance(item, dict) or "position" not in item:
+            continue
+        slug = item.get("slug", "")
+        url = item.get("url") or (f"https://remoteok.com/remote-jobs/{slug}" if slug else "https://remoteok.com")
+        jobs.append({
+            "id": f"remoteok:{item.get('id', slug)}",
+            "title": _clean(item.get("position", "")),
+            "company": _clean(item.get("company", "")),
+            "location": _clean(item.get("location", "")) or "Remote",
+            "tags": [str(t) for t in item.get("tags", []) if t],
+            "url": url,
+            "source": "RemoteOK",
+            "date": item.get("date", ""),
+            "snippet": "",
+        })
+    return jobs
+
+
+# ---------------------------------------------------------------------------
+def fetch_remotive():
+    jobs = []
+    try:
+        r = requests.get(
+            "https://remotive.com/api/remote-jobs",
+            params={"category": "software-dev"},
+            headers=HEADERS, timeout=TIMEOUT,
+        )
+        r.raise_for_status()
+        data = r.json()
+    except Exception as e:
+        print(f"[remotive] error: {e}")
+        return jobs
+    for item in data.get("jobs", []):
+        jobs.append({
+            "id": f"remotive:{item.get('id')}",
+            "title": _clean(item.get("title", "")),
+            "company": _clean(item.get("company_name", "")),
+            "location": _clean(item.get("candidate_required_location", "")) or "Remote",
+            "tags": [str(t) for t in item.get("tags", []) if t],
+            "url": item.get("url", ""),
+            "source": "Remotive",
+            "date": item.get("publication_date", ""),
+            "snippet": "",
+        })
+    return jobs
+
+
+# ---------------------------------------------------------------------------
+WWR_FEEDS = [
+    "https://weworkremotely.com/categories/remote-full-stack-programming-jobs.rss",
+    "https://weworkremotely.com/categories/remote-back-end-programming-jobs.rss",
+    "https://weworkremotely.com/categories/remote-front-end-programming-jobs.rss",
+]
+
+
+def fetch_wwr():
+    jobs = []
+    for feed_url in WWR_FEEDS:
+        try:
+            parsed = feedparser.parse(feed_url, request_headers=RSS_HEADERS)
+        except Exception as e:
+            print(f"[wwr] error {feed_url}: {e}")
+            continue
+        for e in parsed.entries:
+            title = _clean(e.get("title", ""))
+            # WWR usa el formato "Empresa: Puesto"
+            company, sep, position = title.partition(":")
+            region = _clean(e.get("region", "")) or "Remote"
+            skills = _clean(e.get("skills", ""))
+            tags = [s.strip() for s in re.split(r"[,/]", skills) if s.strip()]
+            jobs.append({
+                "id": f"wwr:{e.get('id') or e.get('link')}",
+                "title": position.strip() if sep else title,
+                "company": company.strip() if sep else "",
+                "location": region,
+                "tags": tags,
+                "url": e.get("link", ""),
+                "source": "WeWorkRemotely",
+                "date": e.get("published", ""),
+                "snippet": "",
+            })
+    return jobs
+
+
+# ---------------------------------------------------------------------------
+def fetch_arbeitnow():
+    jobs = []
+    try:
+        r = requests.get("https://www.arbeitnow.com/api/job-board-api",
+                         headers=HEADERS, timeout=TIMEOUT)
+        r.raise_for_status()
+        data = r.json()
+    except Exception as e:
+        print(f"[arbeitnow] error: {e}")
+        return jobs
+    for item in data.get("data", []):
+        loc = _clean(item.get("location", ""))
+        if item.get("remote"):
+            loc = (loc + " · Remote").strip(" ·")
+        tags = [str(t) for t in item.get("tags", []) if t]
+        tags += [str(t) for t in item.get("job_types", []) if t]
+        jobs.append({
+            "id": f"arbeitnow:{item.get('slug')}",
+            "title": _clean(item.get("title", "")),
+            "company": _clean(item.get("company_name", "")),
+            "location": loc or "—",
+            "tags": tags,
+            "url": item.get("url", ""),
+            "source": "Arbeitnow",
+            "date": item.get("created_at", ""),
+            "snippet": "",
+        })
+    return jobs
+
+
+# ---------------------------------------------------------------------------
+def fetch_jooble(api_key, queries):
+    """Colombia. Solo corre si hay api_key (secret JOOBLE_API_KEY)."""
+    jobs = []
+    if not api_key:
+        return jobs
+    for kw, loc in queries:
+        try:
+            r = requests.post(
+                f"https://jooble.org/api/{api_key}",
+                json={"keywords": kw, "location": loc},
+                headers={"Content-Type": "application/json", "User-Agent": UA},
+                timeout=TIMEOUT,
+            )
+            r.raise_for_status()
+            data = r.json()
+        except Exception as e:
+            print(f"[jooble] error ({kw} / {loc}): {e}")
+            continue
+        for item in data.get("jobs", []):
+            src = item.get("source", "")
+            jobs.append({
+                "id": f"jooble:{item.get('id') or item.get('link')}",
+                "title": _clean(item.get("title", "")),
+                "company": _clean(item.get("company", "")),
+                "location": _clean(item.get("location", "")),
+                "tags": [],
+                "url": item.get("link", ""),
+                "source": f"Jooble·{src}" if src else "Jooble",
+                "date": item.get("updated", ""),
+                "snippet": _clean(item.get("snippet", "")),
+            })
+    return jobs
