@@ -33,6 +33,26 @@ def _short(s):
     return hashlib.md5(str(s).encode("utf-8", "ignore")).hexdigest()[:16]
 
 
+def _salary(mn, mx, cur="USD", period="year"):
+    """Formatea un rango salarial numérico, ej. 'USD 85k–95k/año'. Vacío si no hay datos."""
+    try:
+        mn, mx = int(float(mn or 0)), int(float(mx or 0))
+    except (ValueError, TypeError):
+        return ""
+    if not mn and not mx:
+        return ""
+    per = {"annual": "/año", "year": "/año", "yearly": "/año", "month": "/mes",
+           "monthly": "/mes", "hour": "/h", "hourly": "/h"}.get(str(period).lower(), "")
+
+    def kf(n):
+        return f"{n // 1000}k" if n >= 1000 else str(n)
+
+    cur = cur or "USD"
+    if mn and mx:
+        return f"{cur} {kf(mn)}–{kf(mx)}{per}"
+    return f"{cur} {kf(mn or mx)}{per}"
+
+
 # ---------------------------------------------------------------------------
 def fetch_remoteok():
     jobs = []
@@ -57,6 +77,7 @@ def fetch_remoteok():
             "url": url,
             "source": "RemoteOK",
             "date": item.get("date", ""),
+            "salary": _salary(item.get("salary_min"), item.get("salary_max"), "USD", "year"),
             "snippet": "",
             "level": "",
         })
@@ -185,6 +206,8 @@ def fetch_himalayas(limit=50):
             "url": it.get("applicationLink") or it.get("guid") or "",
             "source": "Himalayas",
             "date": "",
+            "salary": _salary(it.get("minSalary"), it.get("maxSalary"),
+                              it.get("currency", "USD"), it.get("salaryPeriod", "annual")),
             "snippet": _clean(it.get("excerpt", "")),
             "level": ", ".join(str(x) for x in seniority),
         })
@@ -252,6 +275,7 @@ def fetch_jooble(api_key, queries):
                 "url": item.get("link", ""),
                 "source": f"Jooble·{src}" if src else "Jooble",
                 "date": item.get("updated", ""),
+                "salary": _clean(item.get("salary", "")),
                 "snippet": _clean(item.get("snippet", "")),
                 "level": "",
             })
@@ -291,6 +315,7 @@ def fetch_careerjet(affid, queries):
                 "url": it.get("url", ""),
                 "source": "Careerjet",
                 "date": it.get("date", ""),
+                "salary": _clean(it.get("salary", "")),
                 "snippet": _clean(it.get("description", "")),
                 "level": "",
             })

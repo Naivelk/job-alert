@@ -140,22 +140,64 @@ def esc(s):
     return _html.escape(str(s or ""))
 
 
+def _bar(pct):
+    """Barra visual de 10 bloques, ej. 90% -> █████████░"""
+    filled = max(0, min(10, round(pct / 10)))
+    return "█" * filled + "░" * (10 - filled)
+
+
+def _verdict(pct):
+    if pct >= 80:
+        return "🟢", "Excelente para ti"
+    if pct >= 65:
+        return "🟢", "Muy compatible"
+    if pct >= 50:
+        return "🟡", "Compatible (con peros)"
+    return "🟠", "Encaje parcial"
+
+
+_REMOTE_WORDS = ["remote", "remoto", "anywhere", "worldwide", "distributed",
+                 "virtual", "teletrabajo", "home office", "en casa"]
+
+
+def _modality(job):
+    text = " ".join([job.get("location", ""), " ".join(job.get("tags", [])),
+                     job.get("title", ""), job.get("level", "")]).lower()
+    if any(w in text for w in ["hybrid", "híbrido", "hibrido"]):
+        return "🏠 Híbrido"
+    if any(w in text for w in _REMOTE_WORDS):
+        if any(w in text for w in ["latam", "latin america", "americas"]):
+            return "💻 Remoto (LATAM)"
+        return "💻 Remoto"
+    return ""
+
+
 def format_job(job, score, ai=None):
-    tags = ", ".join(job.get("tags", [])[:6])
-    lines = [
-        f"🆕 <b>{esc(job['title'])}</b>",
-        f"🏢 {esc(job['company'] or '—')}   📍 {esc(job['location'] or '—')}",
-    ]
-    if tags:
-        lines.append(f"🏷 {esc(tags)}")
+    line2 = f"🏢 {esc(job.get('company') or '—')}   📍 {esc(job.get('location') or '—')}"
+    mod = _modality(job)
+    if mod:
+        line2 += f"   ·   {mod}"
+    lines = [f"🆕 <b>{esc(job['title'])}</b>", line2, ""]
+
     if ai:
-        lines.append(f"🎯 <b>Encaje IA: {ai['fit']}%</b> — {esc(ai['reason'])}")
+        emoji, verdict = _verdict(ai["fit"])
+        lines.append(f"{emoji} <b>{verdict} · {ai['fit']}% compatible contigo</b>")
+        lines.append(f"<code>{_bar(ai['fit'])}</code>")
+        if ai.get("reason"):
+            lines.append(f"💬 <b>Por qué:</b> {esc(ai['reason'])}")
     else:
-        lines.append(f"⭐ Match: {score}")
-    lines.append(f"<i>vía {esc(job['source'])}</i>")
-    lines.append(f'🔗 <a href="{esc(job["url"])}">Ver / Aplicar</a>')
+        lines.append(f"⭐ <b>Relevancia:</b> {score} (por palabras clave)")
+
+    if job.get("salary"):
+        lines.append(f"💵 {esc(job['salary'])}")
+
+    lines.append(f"🔎 <i>vía {esc(job['source'])}</i>")
+    lines.append(f'🔗 <a href="{esc(job["url"])}">Abrir vacante / Postularme</a>')
+
     if ai and ai.get("message"):
-        lines.append(f"✍️ <i>Borrador:</i> {esc(ai['message'])}")
+        lines.append("")
+        lines.append("✍️ <b>Mensaje listo para postularte</b> (cópialo y ajústalo):")
+        lines.append(f"<blockquote expandable>{esc(ai['message'])}</blockquote>")
     return "\n".join(lines)
 
 
@@ -253,12 +295,14 @@ def run(token, chat_id):
         header = (
             "🤖 <b>Bot de Empleos activado</b> ✅\n"
             f"Encontré <b>{len(final)}</b> vacantes que encajan contigo. "
-            f"Aquí van las <b>{len(to_send)}</b> mejores para arrancar:"
+            f"Aquí van las <b>{len(to_send)}</b> mejores:\n\n"
+            "📊 El <b>% compatible</b> = qué tanto encaja la vacante con tu CV (lo calcula la IA)."
         )
     else:
-        header = f"🔔 <b>{len(final)} vacante(s) nueva(s)</b> para tu perfil:"
+        header = f"🔔 <b>{len(final)} vacante(s) nueva(s)</b> para ti"
         if extra > 0:
-            header += f"\n<i>(mostrando las {len(to_send)} mejores; +{extra} guardadas)</i>"
+            header += f"  <i>(top {len(to_send)}; +{extra} guardadas)</i>"
+        header += "\n<i>El % = compatibilidad con tu CV según la IA.</i>"
 
     blocks = [format_job(j, s, a) for (j, s, a) in to_send]
     send_batches(token, chat_id, header, blocks)
