@@ -65,6 +65,14 @@ SENIOR_TERMS = [
 JUNIOR_BOOST = 4       # puntos extra si la vacante es junior/entry
 SENIOR_PENALTY = 6     # puntos menos si es senior (cuando HIDE_SENIOR = False)
 
+# --- Filtro de ubicación ---------------------------------------------------
+HIDE_FOREIGN_ONSITE = True   # oculta vacantes PRESENCIALES en otro país (no remotas y no Colombia)
+COLOMBIA_TERMS = [
+    "colombia", "colombie", "neiva", "huila", "bogotá", "bogota", "medellín", "medellin",
+    "cali", "barranquilla", "cartagena", "bucaramanga", "pereira", "manizales",
+    "cúcuta", "cucuta", "ibagué", "ibague", "villavicencio", "santa marta", "armenia",
+]
+
 # --- Comportamiento --------------------------------------------------------
 MIN_SCORE = 3          # puntaje mínimo por keywords para considerar una vacante
 MAX_PER_RUN = 20       # máximo de ofertas nuevas por corrida (anti-spam)

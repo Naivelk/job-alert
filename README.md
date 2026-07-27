@@ -50,6 +50,7 @@ En la 1ª corrida te llegan las **10 mejores** vacantes. Después corre solo cad
 ## ⚙️ Ajustar a tu gusto (`config.py`)
 - **`STRONG_KEYWORDS` / `BONUS_KEYWORDS`** → tus tecnologías/roles.
 - **`HIDE_SENIOR`** → `True` oculta vacantes senior/lead/principal (ideal early-career). Ponlo en `False` para verlas.
+- **`HIDE_FOREIGN_ONSITE`** → `True` oculta vacantes presenciales en otro país (deja pasar remotas y las de Colombia).
 - **`MIN_SCORE`** → súbelo si quieres menos ofertas, más precisas.
 - **`AI_MIN_FIT`** → % mínimo de encaje IA para avisarte (baja el ruido).
 - **`AI_SCORE_TOP`** → cuántas vacantes pasa a la IA por corrida (controla el gasto).
@@ -61,15 +62,32 @@ En la 1ª corrida te llegan las **10 mejores** vacantes. Después corre solo cad
 ## 📁 Estructura
 ```
 job-alert/
-├── job_bot.py        # lógica: dedup, filtro junior, IA, Telegram
-├── sources.py        # fetchers de cada bolsa de empleo
-├── ai_match.py       # matching con IA (Groq)
-├── config.py         # tu perfil y ajustes  ← edita aquí
-├── perfil.md         # tu CV resumido (contexto para la IA)
-├── seen.json         # memoria de ofertas ya enviadas (se actualiza sola)
+├── job_bot.py          # lógica: dedup, filtros, IA, Telegram
+├── sources.py          # fetchers de cada bolsa de empleo
+├── ai_match.py         # matching con IA (Groq)
+├── weekly_summary.py   # resumen semanal
+├── config.py           # tu perfil y ajustes  ← edita aquí
+├── perfil.md           # tu CV resumido (contexto para la IA)
+├── seen.json           # memoria de ofertas ya enviadas (se actualiza sola)
+├── stats.json          # métricas de la semana (se actualiza sola)
 ├── requirements.txt
-└── .github/workflows/job-alert.yml
+└── .github/workflows/
+    ├── job-alert.yml   # búsqueda cada 8h
+    └── weekly.yml      # resumen semanal (lunes)
 ```
+
+## 📧 Alertas nativas de LinkedIn y Computrabajo (recomendado, 0 código)
+Además del bot, activa las alertas **oficiales** de estas plataformas — son gratis, legales
+y te llegan al correo. Cubren lo que el bot no alcanza a ver:
+
+**LinkedIn**
+1. Entra a **Jobs** (Empleos) y busca tu rol, ej. *"Desarrollador Full Stack"*, ubicación *Colombia* (o *Remoto*).
+2. Activa el interruptor **"Crear alerta de empleo"** (Job alert) → elige frecuencia (diaria).
+3. Bonus: en tu perfil activa **"Open to work"** (visible solo para reclutadores).
+
+**Computrabajo**
+1. Crea tu cuenta en computrabajo.com.co y busca tu rol + ciudad.
+2. En los resultados, dale a **"Crear alerta"** → te llegan las nuevas por email.
 
 ## 📝 Notas
 - El bot **no aplica por ti** ni scrapea LinkedIn/Computrabajo (eso viola sus términos y

@@ -17,6 +17,7 @@ import config as cfg
 import sources
 
 STATE_FILE = "seen.json"
+STATS_FILE = "stats.json"
 
 
 def _norm(s):
@@ -49,6 +50,41 @@ def load_cv():
         except Exception:
             continue
     return ""
+
+
+def update_stats(all_jobs, sent_items):
+    """Acumula métricas de la semana para el resumen (weekly_summary.py)."""
+    try:
+        with open(STATS_FILE, encoding="utf-8") as f:
+            st = json.load(f)
+    except Exception:
+        st = {}
+    st["runs"] = st.get("runs", 0) + 1
+    st["found"] = st.get("found", 0) + len(all_jobs)
+    st["sent"] = st.get("sent", 0) + len(sent_items)
+    by_src = st.get("by_source", {})
+    fits = st.get("fits", [])
+    top = st.get("top", [])
+    for (j, s, a) in sent_items:
+        src = j.get("source", "?").split("·")[0].split(" (")[0].strip()
+        by_src[src] = by_src.get(src, 0) + 1
+        if a:
+            fits.append(a["fit"])
+            top.append({"title": j.get("title", ""), "company": j.get("company", ""),
+                        "fit": a["fit"], "url": j.get("url", "")})
+    top.sort(key=lambda x: x.get("fit", 0), reverse=True)
+    seen_k, uniq = set(), []
+    for t in top:
+        k = (t.get("title", "").lower(), t.get("company", "").lower())
+        if k in seen_k:
+            continue
+        seen_k.add(k)
+        uniq.append(t)
+    st["by_source"] = by_src
+    st["fits"] = fits[-300:]
+    st["top"] = uniq[:8]
+    with open(STATS_FILE, "w", encoding="utf-8") as f:
+        json.dump(st, f, ensure_ascii=False)
 
 
 # --- Recolección -----------------------------------------------------------
@@ -116,6 +152,19 @@ def seniority_flags(job):
     return is_junior, is_senior
 
 
+def location_ok(job):
+    """False solo si es presencial en otro país (no remota y no Colombia)."""
+    loc = (job.get("location", "") or "").lower()
+    text = (loc + " " + job.get("title", "") + " " + " ".join(job.get("tags", []))).lower()
+    if any(t in text for t in cfg.COLOMBIA_TERMS):
+        return True
+    if any(w in text for w in _REMOTE_WORDS):
+        return True
+    if not loc or loc in ("—", "remote"):
+        return True
+    return False
+
+
 def build_scored(all_jobs):
     scored = []
     for job in all_jobs:
@@ -124,6 +173,8 @@ def build_scored(all_jobs):
             continue
         is_jr, is_sr = seniority_flags(job)
         if cfg.HIDE_SENIOR and is_sr and not is_jr:
+            continue
+        if cfg.HIDE_FOREIGN_ONSITE and not location_ok(job):
             continue
         if is_jr:
             s += cfg.JUNIOR_BOOST
@@ -194,10 +245,16 @@ def format_job(job, score, ai=None):
     lines.append(f"🔎 <i>vía {esc(job['source'])}</i>")
     lines.append(f'🔗 <a href="{esc(job["url"])}">Abrir vacante / Postularme</a>')
 
-    if ai and ai.get("message"):
+    if ai and (ai.get("dm") or ai.get("email_body")):
         lines.append("")
-        lines.append("✍️ <b>Mensaje listo para postularte</b> (cópialo y ajústalo):")
-        lines.append(f"<blockquote expandable>{esc(ai['message'])}</blockquote>")
+        if ai.get("dm"):
+            lines.append("✍️ <b>Mensaje corto</b> (LinkedIn/DM):")
+            lines.append(f"<blockquote expandable>{esc(ai['dm'])}</blockquote>")
+        if ai.get("email_body"):
+            subj = ai.get("email_subject", "")
+            body = (f"Asunto: {subj}\n\n" if subj else "") + ai["email_body"]
+            lines.append("📧 <b>Correo formal</b>:")
+            lines.append(f"<blockquote expandable>{esc(body)}</blockquote>")
     return "\n".join(lines)
 
 
@@ -259,6 +316,7 @@ def run(token, chat_id):
 
     if not new:
         print("No hay ofertas nuevas.")
+        update_stats(all_jobs, [])
         save_seen(seen)
         return
 
@@ -307,6 +365,7 @@ def run(token, chat_id):
     blocks = [format_job(j, s, a) for (j, s, a) in to_send]
     send_batches(token, chat_id, header, blocks)
     print(f"Enviadas {len(to_send)} ofertas.")
+    update_stats(all_jobs, to_send)
     save_seen(seen)
 
 
