@@ -41,8 +41,11 @@ def score_with_ai(cv_text, jobs, model, api_key, timeout=60):
         "- fit: entero 0-100 según el encaje REAL con el CV (stack, seniority, "
         "ubicación/remoto; penaliza roles senior o fuera de su stack)\n"
         "- reason: 1 frase corta en español de por qué encaja (o no)\n"
-        "- message: borrador breve (2-3 frases, español, primera persona) para aplicar, "
-        "personalizado a esa vacante\n"
+        "- message: borrador breve (máx 55 palabras, 2-3 frases) para aplicar, en PRIMERA "
+        "persona y en el MISMO idioma de la vacante (español o inglés). Personalízalo: "
+        "menciona 1 tecnología o requisito concreto de esa vacante y conéctalo con una "
+        "fortaleza o proyecto real del CV. Varía el inicio en cada una, suena natural y "
+        "humano, y evita frases cliché repetidas como 'candidato sólido' o 'dispuesto a aprender'.\n"
         'Responde EXACTAMENTE con este formato: '
         '{"results":[{"i":0,"fit":85,"reason":"...","message":"..."}]}'
     )

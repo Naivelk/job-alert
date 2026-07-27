@@ -75,4 +75,4 @@ MAX_SEEN = 4000        # cuántos IDs recordar para no repetir
 AI_ENABLED = True                       # necesita el secret GROQ_API_KEY
 GROQ_MODEL = "llama-3.3-70b-versatile"  # si Groq lo deprecia, cámbialo aquí
 AI_SCORE_TOP = 12   # cuántas de las mejores (por keywords) pasan a la IA por corrida
-AI_MIN_FIT = 40     # si la IA da un encaje menor a esto, no te la manda (0 = enviar todas)
+AI_MIN_FIT = 50     # si la IA da un encaje menor a esto, no te la manda (0 = enviar todas)

@@ -5,6 +5,7 @@
 import html as _html
 import json
 import os
+import re
 import sys
 import time
 import traceback
@@ -16,6 +17,13 @@ import config as cfg
 import sources
 
 STATE_FILE = "seen.json"
+
+
+def _norm(s):
+    """Normaliza título/empresa para deduplicar (quita paréntesis y puntuación)."""
+    s = re.sub(r"\([^)]*\)", " ", str(s).lower())
+    s = re.sub(r"[^0-9a-záéíóúüñ ]+", " ", s)
+    return re.sub(r"\s+", " ", s).strip()
 
 
 # --- Estado (para no repetir ofertas) --------------------------------------
@@ -71,7 +79,7 @@ def gather_jobs():
         if not j.get("id") or j["id"] in by_id:
             continue
         by_id[j["id"]] = j
-        key = (j.get("title", "").strip().lower(), j.get("company", "").strip().lower())
+        key = (_norm(j.get("title", "")), _norm(j.get("company", "")))
         if key in seen_keys:
             continue
         seen_keys.add(key)
