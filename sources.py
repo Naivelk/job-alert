@@ -273,7 +273,8 @@ def fetch_careerjet(affid, queries):
                     "locale_code": locale, "pagesize": 20, "page": 1,
                     "sort": "date", "user_ip": "11.22.33.44", "user_agent": UA,
                 },
-                headers={"User-Agent": UA}, timeout=TIMEOUT,
+                headers={"User-Agent": UA, "Referer": "https://github.com/Naivelk/job-alert"},
+                timeout=TIMEOUT,
             )
             r.raise_for_status()
             data = r.json()
