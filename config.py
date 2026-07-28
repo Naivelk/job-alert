@@ -24,17 +24,21 @@ JOBICY_TAGS = ["python", "react", "javascript", "typescript"]
 JOOBLE_QUERIES = [
     ("desarrollador full stack react python", "Colombia"),
     ("software developer react python", "Neiva"),
+    ("full stack developer remote", "Colombia"),          # en inglés (remoto internacional)
 ]
 
 # Búsquedas de Careerjet.  (keywords, ubicación, locale_code)
 CAREERJET_QUERIES = [
     ("desarrollador full stack react python", "Colombia", "es_CO"),
     ("react python developer", "Neiva", "es_CO"),
+    ("junior full stack developer remote", "Colombia", "es_CO"),   # en inglés
 ]
 
-# Búsquedas de Google Jobs (SerpApi).  (query, ubicación).  1 por corrida = free tier.
+# Búsquedas de Google Jobs (SerpApi).  (query, ubicación).
+# OJO: free tier = 250 búsquedas/mes. 3 corridas/día x 2 queries ≈ 180/mes. No agregues más.
 SERPAPI_QUERIES = [
     ("desarrollador full stack react python", "Colombia"),
+    ("junior full stack developer python react remote", "Colombia"),
 ]
 
 # --- Tu perfil: palabras clave para rankear y filtrar ---------------------
@@ -73,11 +77,42 @@ COLOMBIA_TERMS = [
     "cúcuta", "cucuta", "ibagué", "ibague", "villavicencio", "santa marta", "armenia",
 ]
 
+# --- Frescura (aplicar temprano = más chances) -----------------------------
+MAX_AGE_DAYS = 21      # descarta vacantes más viejas que esto (0 = no filtrar)
+FRESH_BOOST = 3        # puntos extra si se publicó hace menos de 2 días
+
+# --- Vacantes sospechosas (solo avisa, no las oculta) ----------------------
+SUSPICIOUS_TERMS = [
+    "confidencial", "empresa confidencial", "importante empresa del sector",
+    "ingresos ilimitados", "sin experiencia necesaria", "gana desde casa",
+    "inversión inicial", "inversion inicial", "multinivel", "network marketing",
+    "solo comisión", "solo comision", "100% comisión", "100% comision",
+    "reclutamiento", "headhunt", "staffing", "consultora de talento", "temporal services",
+]
+
+# --- Coach de CV: qué skills piden en el mercado ---------------------------
+# Lo que YA tienes (no aparecerá como "te falta")
+MY_SKILLS = [
+    "react", "typescript", "javascript", "python", "fastapi", "postgresql", "postgres",
+    "sql", "rest", "api", "git", "github", "html", "css", "node", "postman",
+]
+# Vocabulario que se busca en las vacantes para detectar tus vacíos
+SKILL_VOCAB = [
+    "docker", "kubernetes", "aws", "azure", "gcp", "django", "flask", "express",
+    "next.js", "nestjs", "graphql", "redis", "mongodb", "mysql", ".net", "c#",
+    "java", "spring", "php", "laravel", "angular", "vue", "svelte", "tailwind",
+    "redux", "jest", "cypress", "ci/cd", "github actions", "jenkins", "terraform",
+    "linux", "microservicios", "microservices", "kafka", "rabbitmq", "elasticsearch",
+    "scrum", "agile", "react native", "flutter", "power bi", "etl", "pandas",
+    "machine learning", "openai", "langchain", "websockets", "kotlin", "swift",
+]
+
 # --- Comportamiento --------------------------------------------------------
 MIN_SCORE = 3          # puntaje mínimo por keywords para considerar una vacante
 MAX_PER_RUN = 20       # máximo de ofertas nuevas por corrida (anti-spam)
 FIRST_RUN_TOP = 10     # en la 1ª corrida, cuántas de las mejores enviarte
 MAX_SEEN = 4000        # cuántos IDs recordar para no repetir
+QUIET_START, QUIET_END = 21, 7   # entre 9 p.m. y 7 a.m. (Colombia) llega sin sonido
 
 # --- Matching con IA (Groq) -----------------------------------------------
 AI_ENABLED = True                       # necesita el secret GROQ_API_KEY

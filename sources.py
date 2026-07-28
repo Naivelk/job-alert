@@ -4,6 +4,7 @@
 #  Formato normalizado de cada oferta (dict):
 #    id, title, company, location, tags(list), url, source, date, snippet, level
 # ============================================================================
+import calendar
 import hashlib
 import html
 import re
@@ -76,7 +77,7 @@ def fetch_remoteok():
             "tags": [str(t) for t in item.get("tags", []) if t],
             "url": url,
             "source": "RemoteOK",
-            "date": item.get("date", ""),
+            "date": item.get("epoch") or item.get("date", ""),
             "salary": _salary(item.get("salary_min"), item.get("salary_max"), "USD", "year"),
             "snippet": "",
             "level": "",
@@ -108,6 +109,7 @@ def fetch_remotive():
             "url": item.get("url", ""),
             "source": "Remotive",
             "date": item.get("publication_date", ""),
+            "salary": _clean(item.get("salary", "")),
             "snippet": "",
             "level": "",
         })
@@ -133,6 +135,8 @@ def fetch_wwr():
         for e in parsed.entries:
             title = _clean(e.get("title", ""))
             company, sep, position = title.partition(":")   # WWR usa "Empresa: Puesto"
+            pp = e.get("published_parsed")
+            when = calendar.timegm(pp) if pp else e.get("published", "")
             region = _clean(e.get("region", "")) or "Remote"
             skills = _clean(e.get("skills", ""))
             tags = [s.strip() for s in re.split(r"[,/]", skills) if s.strip()]
@@ -144,7 +148,8 @@ def fetch_wwr():
                 "tags": tags,
                 "url": e.get("link", ""),
                 "source": "WeWorkRemotely",
-                "date": e.get("published", ""),
+                "date": when,
+                "salary": "",
                 "snippet": "",
                 "level": "",
             })
@@ -177,6 +182,7 @@ def fetch_arbeitnow():
             "url": item.get("url", ""),
             "source": "Arbeitnow",
             "date": item.get("created_at", ""),
+            "salary": "",
             "snippet": "",
             "level": "",
         })
@@ -205,7 +211,7 @@ def fetch_himalayas(limit=50):
             "tags": [str(c) for c in (it.get("categories") or [])][:8],
             "url": it.get("applicationLink") or it.get("guid") or "",
             "source": "Himalayas",
-            "date": "",
+            "date": it.get("pubDate", ""),
             "salary": _salary(it.get("minSalary"), it.get("maxSalary"),
                               it.get("currency", "USD"), it.get("salaryPeriod", "annual")),
             "snippet": _clean(it.get("excerpt", "")),
@@ -239,6 +245,8 @@ def fetch_jobicy(tags):
                 "url": it.get("url", ""),
                 "source": "Jobicy",
                 "date": it.get("pubDate", ""),
+                "salary": _salary(it.get("annualSalaryMin"), it.get("annualSalaryMax"),
+                                  it.get("salaryCurrency", "USD"), "year"),
                 "snippet": "",
                 "level": str(it.get("jobLevel", "")),
             })
@@ -347,6 +355,7 @@ def fetch_serpapi(api_key, queries):
             opts = it.get("apply_options") or []
             link = (opts[0].get("link") if opts else "") or it.get("share_link", "")
             via = it.get("via", "")
+            ext = it.get("detected_extensions") or {}
             jobs.append({
                 "id": f"serpapi:{_short(it.get('job_id') or it.get('title', ''))}",
                 "title": _clean(it.get("title", "")),
@@ -355,7 +364,8 @@ def fetch_serpapi(api_key, queries):
                 "tags": [],
                 "url": link,
                 "source": f"Google Jobs ({via})" if via else "Google Jobs",
-                "date": "",
+                "date": _clean(ext.get("posted_at", "")),
+                "salary": _clean(ext.get("salary", "")),
                 "snippet": _clean(it.get("description", ""))[:400],
                 "level": "",
             })

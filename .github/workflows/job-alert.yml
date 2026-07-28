@@ -2,7 +2,8 @@ name: Job Alert Bot
 
 on:
   schedule:
-    - cron: '0 */8 * * *'   # cada 8 horas (3 veces al día, en UTC) — dentro del free tier de SerpApi
+    # 7:00 a.m., 12:00 m. y 6:00 p.m. hora Colombia (UTC-5) — nada de madrugadas
+    - cron: '0 12,17,23 * * *'
   workflow_dispatch:          # botón para correrlo manualmente
 
 permissions:
