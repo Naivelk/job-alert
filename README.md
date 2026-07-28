@@ -19,8 +19,17 @@ Busca en fuentes **gratis y legales** (nada de scrapear LinkedIn/Computrabajo):
 | **Google Jobs** (SerpApi) | LinkedIn / Computrabajo / Indeed vía Google | `SERPAPI_KEY` |
 
 > 🧠 **Matching con IA (Groq):** con `GROQ_API_KEY`, la IA lee tu `perfil.md` + cada vacante,
-> te da un **% de encaje**, una razón y un **borrador de mensaje** para aplicar. Sin la key,
-> el bot igual funciona con el ranking por palabras clave.
+> te da un **% de compatibilidad**, la razón y **2 borradores** (mensaje corto y correo formal).
+> Sin la key, el bot igual funciona con el ranking por palabras clave.
+
+### ✨ Qué más hace
+- 🔥 **Frescura:** muestra hace cuánto se publicó, prioriza las de menos de 48 h y descarta las de más de 21 días (aplicar temprano = más chances).
+- 🎓 **Coach de CV:** en el resumen semanal te dice qué skills piden más las vacantes que te encajan y **no tienes** (ej. *"Docker: en el 60%"*) — tu guía de qué aprender.
+- ✅ **Registro de postulaciones:** responde **«apliqué»** a una vacante en Telegram y el bot lleva la cuenta.
+- 🌍 **Filtro de ubicación:** oculta presenciales en otro país (deja remotas y Colombia).
+- ⚠️ **Detector de sospechosas:** marca empresas confidenciales, intermediarias o con señales de estafa.
+- 🌙 **Horario humano:** corre 7 a.m. / 12 m. / 6 p.m. (Colombia) y de noche llega sin sonido.
+- 🧪 **CI:** `smoke_test.py` valida la lógica en cada push.
 
 ---
 
@@ -51,6 +60,9 @@ En la 1ª corrida te llegan las **10 mejores** vacantes. Después corre solo cad
 - **`STRONG_KEYWORDS` / `BONUS_KEYWORDS`** → tus tecnologías/roles.
 - **`HIDE_SENIOR`** → `True` oculta vacantes senior/lead/principal (ideal early-career). Ponlo en `False` para verlas.
 - **`HIDE_FOREIGN_ONSITE`** → `True` oculta vacantes presenciales en otro país (deja pasar remotas y las de Colombia).
+- **`MAX_AGE_DAYS`** → antigüedad máxima de una vacante (21 días). `FRESH_BOOST` prioriza las recién publicadas.
+- **`QUIET_START` / `QUIET_END`** → franja en que los avisos llegan sin sonido (9 p.m.–7 a.m.).
+- **`MY_SKILLS` / `SKILL_VOCAB`** → alimentan el coach de CV (qué te falta según el mercado).
 - **`MIN_SCORE`** → súbelo si quieres menos ofertas, más precisas.
 - **`AI_MIN_FIT`** → % mínimo de encaje IA para avisarte (baja el ruido).
 - **`AI_SCORE_TOP`** → cuántas vacantes pasa a la IA por corrida (controla el gasto).
@@ -65,15 +77,17 @@ job-alert/
 ├── job_bot.py          # lógica: dedup, filtros, IA, Telegram
 ├── sources.py          # fetchers de cada bolsa de empleo
 ├── ai_match.py         # matching con IA (Groq)
-├── weekly_summary.py   # resumen semanal
+├── weekly_summary.py   # resumen semanal + coach de CV
+├── smoke_test.py       # pruebas de la lógica (corren en CI)
 ├── config.py           # tu perfil y ajustes  ← edita aquí
 ├── perfil.md           # tu CV resumido (contexto para la IA)
 ├── seen.json           # memoria de ofertas ya enviadas (se actualiza sola)
 ├── stats.json          # métricas de la semana (se actualiza sola)
 ├── requirements.txt
 └── .github/workflows/
-    ├── job-alert.yml   # búsqueda cada 8h
-    └── weekly.yml      # resumen semanal (lunes)
+    ├── job-alert.yml   # búsqueda 7am / 12m / 6pm (Colombia)
+    ├── weekly.yml      # resumen semanal (lunes 8am)
+    └── ci.yml          # pruebas en cada push
 ```
 
 ## 📧 Alertas nativas de LinkedIn y Computrabajo (recomendado, 0 código)
