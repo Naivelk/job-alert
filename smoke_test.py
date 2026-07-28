@@ -148,7 +148,8 @@ check_true("incluye las vacantes", "BairesDev" in page and "Backend Dev" in page
 check_true("incluye el bot para marcar aplicadas", "jobNaivelk_bot" in page)
 check_true("un título con </script> no puede romper la página",
            "<script>alert(1)</script>" not in page)
-check_true("ese título sí se escapa como unicode", "\\u003cscript\\u003e" in page)
+check_true("el '<' se escapa como unicode (basta para bloquear </script>)",
+           "\\u003cscript" in page and "\\u003c/script" in page)
 check_true("es responsive", "viewport" in page)
 check_true("soporta modo oscuro", "prefers-color-scheme" in page)
 

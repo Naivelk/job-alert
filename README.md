@@ -78,6 +78,8 @@ job-alert/
 ├── sources.py          # fetchers de cada bolsa de empleo
 ├── ai_match.py         # matching con IA (Groq)
 ├── weekly_summary.py   # resumen semanal + coach de CV
+├── panel.py            # genera el panel web (docs/index.html)
+├── matches.json        # historial de vacantes para el panel (se actualiza solo)
 ├── smoke_test.py       # pruebas de la lógica (corren en CI)
 ├── config.py           # tu perfil y ajustes  ← edita aquí
 ├── perfil.md           # tu CV resumido (contexto para la IA)
@@ -89,6 +91,19 @@ job-alert/
     ├── weekly.yml      # resumen semanal (lunes 8am)
     └── ci.yml          # pruebas en cada push
 ```
+
+## 🖥️ Panel web (GitHub Pages)
+El bot genera `docs/index.html` con todas tus vacantes: buscador, filtro por %,
+estado (aplicada / pendiente), orden, modo oscuro y responsive.
+
+**Actívalo una sola vez:** repo → **Settings → Pages** → *Source:* **Deploy from a branch**
+→ rama **main**, carpeta **/docs** → **Save**.
+
+Queda en 👉 **https://naivelk.github.io/job-alert/** y se actualiza en cada corrida.
+
+> El botón **"Marcar como aplicada"** abre Telegram con el mensaje ya escrito: un clic y el
+> bot registra la postulación. Nunca editas la tabla a mano. (Detectar por sí solo que
+> aplicaste en LinkedIn no es posible sin acceder a tus cuentas, así que no se hace.)
 
 ## 📧 Alertas nativas de LinkedIn y Computrabajo (recomendado, 0 código)
 Además del bot, activa las alertas **oficiales** de estas plataformas — son gratis, legales

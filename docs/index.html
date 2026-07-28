@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Mis vacantes — Job Alert</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+background:var(--bg);color:var(--fg);line-height:1.5}
+:root{--bg:#f6f7f9;--fg:#16181d;--card:#fff;--muted:#606770;--line:#e3e5e9;
+--accent:#2563eb;--good:#16a34a;--mid:#d97706;--low:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1115;--fg:#e8eaed;--card:#181b21;
+--muted:#9aa0a6;--line:#2a2e37;--accent:#60a5fa}}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 16px 60px}
+h1{font-size:1.6rem;margin:0 0 4px}
+.sub{color:var(--muted);font-size:.9rem;margin-bottom:20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:22px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.stat b{display:block;font-size:1.5rem}
+.stat span{color:var(--muted);font-size:.8rem}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+input,select{background:var(--card);color:var(--fg);border:1px solid var(--line);
+border-radius:9px;padding:9px 12px;font-size:.9rem;font-family:inherit}
+input{flex:1;min-width:200px}
+.job{background:var(--card);border:1px solid var(--line);border-radius:12px;
+padding:16px;margin-bottom:12px}
+.job.applied{opacity:.6}
+.top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.title{font-weight:650;font-size:1.02rem;margin:0}
+.title a{color:var(--fg);text-decoration:none}
+.title a:hover{color:var(--accent)}
+.meta{color:var(--muted);font-size:.86rem;margin-top:3px}
+.fit{flex-shrink:0;text-align:right;font-weight:700;font-size:1.15rem}
+.bar{height:5px;border-radius:3px;background:var(--line);margin-top:5px;width:88px;overflow:hidden}
+.bar i{display:block;height:100%}
+.why{font-size:.87rem;margin-top:9px;color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tag{font-size:.74rem;background:var(--bg);border:1px solid var(--line);
+border-radius:20px;padding:3px 9px;color:var(--muted)}
+.actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.btn{font-size:.83rem;padding:7px 13px;border-radius:8px;text-decoration:none;
+border:1px solid var(--line);color:var(--fg);display:inline-block}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.empty{text-align:center;color:var(--muted);padding:50px 0}
+footer{margin-top:30px;color:var(--muted);font-size:.8rem;text-align:center}
+</style>
+</head><body><div class="wrap">
+<h1>🎯 Mis vacantes</h1>
+<div class="sub">Actualizado: 28/07/2026 12:02 AM (Colombia) · se refresca solo en cada corrida del bot</div>
+
+<div class="stats">
+ <div class="stat"><b>8</b><span>vacantes guardadas</span></div>
+ <div class="stat"><b>0</b><span>ya apliqué</span></div>
+ <div class="stat"><b>69%</b><span>compatibilidad media</span></div>
+ <div class="stat"><b>503</b><span>revisadas esta semana</span></div>
+</div>
+
+<div class="controls">
+ <input id="q" placeholder="Buscar por puesto, empresa, fuente…">
+ <select id="min">
+  <option value="0">Cualquier %</option>
+  <option value="60">60% o más</option>
+  <option value="70">70% o más</option>
+  <option value="80">80% o más</option>
+ </select>
+ <select id="st">
+  <option value="all">Todas</option>
+  <option value="pend">Sin aplicar</option>
+  <option value="done">Ya apliqué</option>
+ </select>
+ <select id="sort">
+  <option value="fit">Mejor compatibilidad</option>
+  <option value="new">Más recientes</option>
+ </select>
+</div>
+
+<div class="sub"><b id="n">0</b> vacantes</div>
+<div id="list"></div>
+
+<footer>Generado por <a href="https://github.com/Naivelk/job-alert">job-alert</a> ·
+Las vacantes provienen de RemoteOK, Remotive, We Work Remotely, Arbeitnow, Himalayas,
+Jobicy, Jooble, Careerjet y Google Jobs.</footer>
+</div>
+<script>const DATA=[{"key": "k:desarrollador full stack python react modalidad virtual|confidencial", "title": "Desarrollador Full Stack: Python, React Modalidad Virtual", "company": "CONFIDENCIAL", "location": "", "url": "https://www.mipleo.com.co/ofertas-de-trabajo/oferta-de-trabajo-en-antioquia/desarrollador-full-stack-python-react-modalidad-virtual-12712420.html?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic", "source": "Google Jobs / Careerjet", "salary": "", "modality": "", "age": "", "fit": 85, "reason": "", "seen": 1785214967, "applied": false}, {"key": "k:desarrollador full stack python react modalidad virtual|lutcorp colombia ltda", "title": "Desarrollador Full Stack Python, React Modalidad Virtual", "company": "Lutcorp Colombia Ltda", "location": "", "url": "https://jobviewtrack.com/v2/0RlWBPrqfrmpn2OF_U6oI6fdOcY3Z-KqwSIBrm5uEe7TEYWDELoToUZc0Wj1KsM3W5ibx-WUu7SUrJMK6MMKZj-HsrGlK1PuYkiSwd19rXpYXBW_bLyVyQ0qh6RF-zjYsrY_hGAdFAxGq91JNOw1pGzI73RP49oXgWqp2PMZtJMsmvGERnTAqGUxTzDme5PLCnGMW-kotNZhlUrDYB2T7A", "source": "Google Jobs / Careerjet", "salary": "", "modality": "", "age": "", "fit": 80, "reason": "", "seen": 1785214967, "applied": false}, {"key": "k:full stack developer remote work ref 298570|bairesdev", "title": "Full-Stack Developer (Python + React) - Remote Work | REF#298570", "company": "BairesDev", "location": "", "url": "https://co.linkedin.com/jobs/view/full-stack-developer-python-%2B-react-remote-work-ref%23298570-at-bairesdev-4443580863?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic", "source": "LinkedIn", "salary": "", "modality": "", "age": "", "fit": 80, "reason": "", "seen": 1785214967, "applied": false}, {"key": "k:full stack developer|huzzle com", "title": "Full-Stack Developer (Python, React, AI)", "company": "Huzzle.com", "location": "", "url": "https://bebee.com/co/jobs/full-stack-developer-python-react-ai-huzzlecom--bs-co-4357b5f5-5238-42b1-a2f9-e6b0df25d030?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic", "source": "BeBee", "salary": "", "modality": "", "age": "", "fit": 70, "reason": "", "seen": 1785214967, "applied": false}, {"key": "k:desarrollador full stack|confidencial", "title": "Desarrollador Full Stack (Python/Django + React)", "company": "Confidencial", "location": "", "url": "https://www.litethinking.com/es/jobs/-425/?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic", "source": "Google Jobs / Careerjet", "salary": "", "modality": "", "age": "", "fit": 70, "reason": "", "seen": 1785214967, "applied": false}, {"key": "k:remote full stack engineer python react growth|bluelight consulting llc", "title": "Remote Full-Stack Engineer: Python + React & Growth", "company": "Bluelight Consulting LLC", "location": "", "url": "https://co.jooble.org/jdp/3234667340317734811?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic", "source": "Jooble", "salary": "", "modality": "", "age": "", "fit": 60, "reason": "", "seen": 1785214967, "applied": false}, {"key": "k:desarrolladora de software bogotá y cundinamarca|centro de empleo y talento colsubsidio", "title": "Desarrolladora de Software Bogotá y Cundinamarca", "company": "CENTRO DE EMPLEO Y TALENTO COLSUBSIDIO", "location": "", "url": "https://jobviewtrack.com/v2/DDY30ZAmkFEVHZ153OBJTvG9HPHKZatt1AzftgyXwdv0Dt4ANkDIbbQY6CJKANNth4fQcsquWQW4lR1lJxpbBxqVyUDSZkvnul3ksZm9i1IsdQWcNwZa-HiYVX6OvnCDd4Cx48ULMnBeI4JNXUafm41qDb3IT0c7yLib5dONH1fxKhdEEtyW3JNXwT18aye97ATQ4Z8tdpte6vWz5w0cag", "source": "Google Jobs / Careerjet", "salary": "", "modality": "", "age": "", "fit": 60, "reason": "", "seen": 1785214967, "applied": false}, {"key": "k:react frontend engineer bigpay|name", "title": "React Frontend Engineer, BigPay (Fully Remote)", "company": "name", "location": "", "url": "https://himalayas.app/companies/binance/jobs/react-frontend-engineer-bigpay-fully-remote", "source": "Himalayas", "salary": "", "modality": "", "age": "", "fit": 50, "reason": "", "seen": 1785214967, "applied": false}];
+const BOT="jobNaivelk_bot";
+
+const D=DATA;
+const $=s=>document.querySelector(s);
+function color(f){return f>=80?'var(--good)':f>=60?'var(--mid)':'var(--low)'}
+function esc(s){const d=document.createElement('div');d.textContent=s==null?'':s;return d.innerHTML}
+function render(){
+ const q=$('#q').value.toLowerCase(), min=+$('#min').value, st=$('#st').value, sort=$('#sort').value;
+ let list=D.filter(j=>{
+  if(j.fit<min) return false;
+  if(st==='pend'&&j.applied) return false;
+  if(st==='done'&&!j.applied) return false;
+  if(q&&!((j.title+' '+j.company+' '+j.source+' '+j.location).toLowerCase().includes(q))) return false;
+  return true});
+ list.sort((a,b)=> sort==='fit'? b.fit-a.fit : (b.seen||0)-(a.seen||0));
+ $('#n').textContent=list.length;
+ $('#list').innerHTML = list.length? list.map(j=>`
+  <div class="job ${j.applied?'applied':''}">
+   <div class="top">
+    <div>
+     <p class="title"><a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.title)}</a></p>
+     <div class="meta">${esc(j.company||'—')} · ${esc(j.location||'—')}${j.salary?' · 💵 '+esc(j.salary):''}</div>
+    </div>
+    <div class="fit" style="color:${color(j.fit)}">${j.fit}%
+     <div class="bar"><i style="width:${j.fit}%;background:${color(j.fit)}"></i></div>
+    </div>
+   </div>
+   ${j.reason?`<div class="why">💬 ${esc(j.reason)}</div>`:''}
+   <div class="tags">
+    <span class="tag">${esc(j.source)}</span>
+    ${j.modality?`<span class="tag">${esc(j.modality)}</span>`:''}
+    ${j.age?`<span class="tag">${esc(j.age)}</span>`:''}
+    ${j.applied?'<span class="tag">✅ Ya apliqué</span>':''}
+   </div>
+   <div class="actions">
+    <a class="btn primary" href="${esc(j.url)}" target="_blank" rel="noopener">Abrir vacante</a>
+    ${j.applied?'':`<a class="btn" target="_blank" rel="noopener"
+      href="https://t.me/${BOT}?text=${encodeURIComponent('apliqué a '+j.title)}">Marcar como aplicada</a>`}
+   </div>
+  </div>`).join('') : '<div class="empty">No hay vacantes con esos filtros.</div>';
+}
+['q','min','st','sort'].forEach(id=>{
+ const el=document.getElementById(id);
+ el.addEventListener(id==='q'?'input':'change',render)});
+render();
+</script></body></html>
