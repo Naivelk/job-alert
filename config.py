@@ -114,6 +114,9 @@ FIRST_RUN_TOP = 10     # en la 1ª corrida, cuántas de las mejores enviarte
 MAX_SEEN = 12000       # cuántas claves recordar (solo vacantes relevantes) ≈ 1-2 meses
 QUIET_START, QUIET_END = 21, 7   # entre 9 p.m. y 7 a.m. (Colombia) llega sin sonido
 
+# Usuario del bot (sin @) — el panel lo usa para el botón "Marcar como aplicada"
+TELEGRAM_BOT_USERNAME = "jobNaivelk_bot"
+
 # --- Matching con IA (Groq) -----------------------------------------------
 AI_ENABLED = True                       # necesita el secret GROQ_API_KEY
 GROQ_MODEL = "llama-3.3-70b-versatile"  # si Groq lo deprecia, cámbialo aquí

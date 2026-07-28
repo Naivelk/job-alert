@@ -16,10 +16,13 @@ import requests
 
 import ai_match
 import config as cfg
+import panel
 import sources
 
 STATE_FILE = "seen.json"
 STATS_FILE = "stats.json"
+MATCHES_FILE = "matches.json"
+MAX_MATCHES = 200
 
 COL_TZ = timezone(timedelta(hours=-5))   # Colombia (UTC-5, sin horario de verano)
 
@@ -135,6 +138,58 @@ def load_stats():
 def save_stats(st):
     with open(STATS_FILE, "w", encoding="utf-8") as f:
         json.dump(st, f, ensure_ascii=False)
+
+
+def load_matches():
+    try:
+        with open(MATCHES_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def save_matches(matches):
+    with open(MATCHES_FILE, "w", encoding="utf-8") as f:
+        json.dump(matches[:MAX_MATCHES], f, ensure_ascii=False)
+
+
+def record_matches(sent_items, st):
+    """Guarda las vacantes enviadas para el panel web y marca las ya aplicadas."""
+    matches = load_matches()
+    known = {m.get("key") for m in matches}
+    for (j, _s, a) in sent_items:
+        k = job_key(j) or j["id"]
+        if k in known:
+            continue
+        known.add(k)
+        matches.append({
+            "key": k,
+            "title": j.get("title", ""),
+            "company": j.get("company", ""),
+            "location": j.get("location", ""),
+            "url": j.get("url", ""),
+            "source": j.get("source", ""),
+            "salary": j.get("salary", ""),
+            "modality": _modality(j),
+            "age": age_label(j),
+            "fit": a["fit"] if a else 0,
+            "reason": a.get("reason", "") if a else "",
+            "seen": int(time.time()),
+            "applied": False,
+        })
+
+    # Marca como aplicadas las que confirmaste por Telegram
+    applied_titles = [_norm(x.get("title", "")) for x in st.get("applied", [])]
+    for m in matches:
+        if m.get("applied"):
+            continue
+        t = _norm(m.get("title", ""))
+        if t and any(t in at or at in t for at in applied_titles if at):
+            m["applied"] = True
+
+    matches.sort(key=lambda m: m.get("fit", 0), reverse=True)
+    save_matches(matches)
+    return matches
 
 
 def load_cv():
@@ -521,6 +576,7 @@ def run(token, chat_id):
     if not new:
         print("No hay ofertas nuevas.")
         update_stats(st, all_jobs, [], relevant)
+        panel.render(record_matches([], st), st)   # refresca el panel (postulaciones)
         save_stats(st)
         save_seen(seen)
         return
@@ -570,6 +626,7 @@ def run(token, chat_id):
     print(f"Enviadas {len(to_send)} ofertas.")
 
     update_stats(st, all_jobs, to_send, relevant)
+    panel.render(record_matches(to_send, st), st)
     save_stats(st)
     save_seen(seen)
 

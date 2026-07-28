@@ -128,6 +128,30 @@ check_true("detecta junior", jr and not sr)
 jr, sr = jb.seniority_flags({"title": "Senior Staff Engineer", "level": ""})
 check_true("detecta senior", sr)
 
+# --- Panel web -------------------------------------------------------------
+import panel
+
+matches = [
+    {"key": "k:a", "title": "Full-Stack Dev <script>alert(1)</script>", "company": "BairesDev",
+     "location": "Remote", "url": "https://ex.com", "source": "LinkedIn", "salary": "USD 3k",
+     "modality": "💻 Remoto", "age": "🔥 hace 2 h", "fit": 90, "reason": "Encaja",
+     "seen": int(now), "applied": False},
+    {"key": "k:b", "title": "Backend Dev", "company": "Otra", "location": "Bogotá",
+     "url": "https://ex.com/2", "source": "Careerjet", "salary": "", "modality": "",
+     "age": "", "fit": 65, "reason": "", "seen": int(now), "applied": True},
+]
+out = panel.render(matches, {"found": 503})
+with open(out, encoding="utf-8") as f:
+    page = f.read()
+check_true("el panel se genera", len(page) > 1000)
+check_true("incluye las vacantes", "BairesDev" in page and "Backend Dev" in page)
+check_true("incluye el bot para marcar aplicadas", "jobNaivelk_bot" in page)
+check_true("un título con </script> no puede romper la página",
+           "<script>alert(1)</script>" not in page)
+check_true("ese título sí se escapa como unicode", "\\u003cscript\\u003e" in page)
+check_true("es responsive", "viewport" in page)
+check_true("soporta modo oscuro", "prefers-color-scheme" in page)
+
 # --- Resultado -------------------------------------------------------------
 if fails:
     print("❌ FALLARON estas pruebas:")

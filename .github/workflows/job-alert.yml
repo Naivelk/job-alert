@@ -43,7 +43,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add seen.json stats.json
+          git add seen.json stats.json matches.json docs/
           git diff --staged --quiet || git commit -m "chore: update state [skip ci]"
           git pull --rebase origin main
           git push
