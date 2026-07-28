@@ -111,7 +111,7 @@ SKILL_VOCAB = [
 MIN_SCORE = 3          # puntaje mínimo por keywords para considerar una vacante
 MAX_PER_RUN = 20       # máximo de ofertas nuevas por corrida (anti-spam)
 FIRST_RUN_TOP = 10     # en la 1ª corrida, cuántas de las mejores enviarte
-MAX_SEEN = 4000        # cuántos IDs recordar para no repetir
+MAX_SEEN = 12000       # cuántas claves recordar (solo vacantes relevantes) ≈ 1-2 meses
 QUIET_START, QUIET_END = 21, 7   # entre 9 p.m. y 7 a.m. (Colombia) llega sin sonido
 
 # --- Matching con IA (Groq) -----------------------------------------------

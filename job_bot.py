@@ -34,6 +34,13 @@ def _norm(s):
     return re.sub(r"\s+", " ", s).strip()
 
 
+def job_key(job):
+    """Clave título+empresa: identifica la MISMA vacante aunque venga de otra fuente.
+    Se guarda junto al id para no re-avisar entre corridas. '' si no hay título."""
+    t, c = _norm(job.get("title", "")), _norm(job.get("company", ""))
+    return f"k:{t}|{c}" if t else ""
+
+
 # --- Fechas / frescura -----------------------------------------------------
 _REL_RE = re.compile(r"hace\s+(\d+)\s*(minuto|hora|d[ií]a|semana|mes)", re.I)
 _REL_EN_RE = re.compile(r"(\d+)\s*(minute|hour|day|week|month)s?\s+ago", re.I)
@@ -499,9 +506,17 @@ def run(token, chat_id):
     relevant = [j for (j, _s) in scored]
     print(f"{len(scored)} pasan los filtros (score, junior, ubicación, frescura).")
 
-    new = [(j, s) for (j, s) in scored if j["id"] not in seen]
-    for j in all_jobs:
+    # Nueva = ni su id ni su clave título+empresa se han visto antes
+    new = [(j, s) for (j, s) in scored
+           if j["id"] not in seen and (not job_key(j) or job_key(j) not in seen)]
+
+    # Recuerda SOLO las relevantes: las demás se vuelven a descartar gratis en cada
+    # corrida, y así el historial alcanza para meses en vez de un par de días.
+    for (j, _s) in scored:
         seen.add(j["id"])
+        k = job_key(j)
+        if k:
+            seen.add(k)
 
     if not new:
         print("No hay ofertas nuevas.")

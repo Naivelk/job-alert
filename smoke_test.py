@@ -104,6 +104,17 @@ check_true("funciona sin IA", "Relevancia" in card_sin_ia)
 # --- Dedup y puntaje -------------------------------------------------------
 check("normaliza para dedup", jb._norm("Mid Fullstack Developer (Bogotá)"),
       jb._norm("Mid Fullstack Developer"))
+
+# La misma vacante desde dos fuentes debe compartir clave (no re-avisar entre corridas)
+linkedin = {"id": "serpapi:abc", "title": "Mid Fullstack Developer (Bogotá)",
+            "company": "Identidad"}
+careerjet = {"id": "careerjet:xyz", "title": "Mid Fullstack Developer",
+             "company": "IDENTIDAD"}
+check("misma vacante, misma clave", jb.job_key(linkedin), jb.job_key(careerjet))
+check_true("vacantes distintas, claves distintas",
+           jb.job_key(linkedin) != jb.job_key({"title": "Backend Dev", "company": "Otra"}))
+check("sin título no genera clave", jb.job_key({"title": "", "company": "X"}), "")
+
 check_true("puntúa una vacante de tu stack",
            jb.score_job({"title": "Full Stack Developer React Python", "tags": [],
                          "company": "", "location": "Remote", "snippet": ""}) > 0)

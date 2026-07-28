@@ -168,9 +168,11 @@ def fetch_arbeitnow():
         print(f"[arbeitnow] error: {e}")
         return jobs
     for item in data.get("data", []):
+        # Arbeitnow devuelve TODO el mercado alemán; sin remoto no te sirve.
+        if not item.get("remote"):
+            continue
         loc = _clean(item.get("location", ""))
-        if item.get("remote"):
-            loc = (loc + " · Remote").strip(" ·")
+        loc = (loc + " · Remote").strip(" ·")
         tags = [str(t) for t in item.get("tags", []) if t]
         tags += [str(t) for t in item.get("job_types", []) if t]
         jobs.append({
